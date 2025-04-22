@@ -66,3 +66,15 @@ make -j$(nproc)
 
 # After build completes, you can run Llama.cpp
 echo "Installation complete. Run Llama.cpp using ./bin/llama"
+
+
+pip install huggingface-hub
+
+# Create model folder
+mkdir -p ~/llama.cpp/models
+cd ~/llama.cpp/models
+
+# Download a model (replace with any GGUF model you prefer)
+huggingface-cli download TheBloke/Llama-2-7B-Chat-GGUF \
+  llama-2-7b-chat.Q4_K_M.gguf --local-dir . --local-dir-use-symlinks False
+

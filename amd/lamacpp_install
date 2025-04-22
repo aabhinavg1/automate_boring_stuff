@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Update and upgrade system
+sudo apt update && sudo apt upgrade -y
+
+# Install dependencies
+sudo apt install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    curl \
+    python3-pip \
+    python3-dev \
+    libopenblas-dev \
+    libomp-dev \
+    libopencv-dev \
+    libboost-all-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libcuda1-450 \
+    clang \
+    clang++ \
+    libcurl4-openssl-dev
+
+# Install ROCm for AMD GPU support (specific for AMD GPUs)
+echo "Adding AMD ROCm repository"
+sudo apt install -y gnupg2
+curl -sL https://repo.radeon.com/rocm/rocm.asc | sudo apt-key add -
+echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ rocm main" | sudo tee /etc/apt/sources.list.d/rocm.list
+
+# Update and install ROCm and HIPBLAS
+sudo apt update
+sudo apt install -y rocm-dkms rocm-dev rocm-utils hipblas
+
+# Check ROCm installation
+/opt/rocm/bin/rocminfo
+
+# Install C++ dependencies for Llama.cpp
+sudo apt install -y \
+    libtbb-dev \
+    libeigen3-dev \
+    libyaml-cpp-dev \
+    libjemalloc-dev
+
+# Install Rust (necessary for some components of Llama.cpp)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Add rust to path
+source $HOME/.cargo/env
+
+# Clone Llama.cpp repository
+cd ~
+git clone https://github.com/facebook/llama.cpp.git
+cd llama.cpp
+
+# Install dependencies via `pip` (for Python bindings if needed)
+pip3 install -r requirements.txt
+
+# Build Llama.cpp (requires cmake and a compiler)
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+
+# After build completes, you can run Llama.cpp
+echo "Installation complete. Run Llama.cpp using ./bin/llama"
